@@ -98,8 +98,7 @@ public class CharacterBattle : MonoBehaviour
         characterBase.PlayMeleeAttack1Anim(attackDir, () => {
         // Target Hit
         foreach (CharacterBattle characterBattle in targetCharacterBattles){
-            characterBattle.Damage(50);
-
+            characterBattle.Damage(10);
         }
         }, () => {
             characterBase.PlayIdleAnim(attackDir);
@@ -113,8 +112,7 @@ public class CharacterBattle : MonoBehaviour
         characterBase.PlayRangedAttack1Anim(attackDir, () => {
         // Target Hit
         foreach (CharacterBattle characterBattle in targetCharacterBattles){
-            characterBattle.Damage(50);
-
+            characterBattle.Damage(10);
         }
         }, () => {
             characterBase.PlayIdleAnim(attackDir);

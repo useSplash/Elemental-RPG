@@ -191,26 +191,34 @@ public class BattleHandler : MonoBehaviour
                 break;
             case Card.Target.AllAllies:
                 if (activeCharacterBattle.GetIsPlayerTeam()){
-                    targetCharacterBattles.Add(characterBattles[0]);
-                    targetCharacterBattles.Add(characterBattles[1]);
-                    targetCharacterBattles.Add(characterBattles[2]);
+                    for (int i = 0; i < 3; i++) {
+                        if (characterBattles[i]){
+                            targetCharacterBattles.Add(characterBattles[i]);
+                        }
+                    }
                 }
                 else {
-                    targetCharacterBattles.Add(characterBattles[3]);
-                    targetCharacterBattles.Add(characterBattles[4]);
-                    targetCharacterBattles.Add(characterBattles[5]);
+                    for (int i = 3; i < 6; i++) {
+                        if (characterBattles[i]){
+                            targetCharacterBattles.Add(characterBattles[i]);
+                        }
+                    }
                 }
                 break;
             case Card.Target.AllEnemies:
                 if (activeCharacterBattle.GetIsPlayerTeam()){
-                    targetCharacterBattles.Add(characterBattles[3]);
-                    targetCharacterBattles.Add(characterBattles[4]);
-                    targetCharacterBattles.Add(characterBattles[5]);
+                    for (int i = 3; i < 6; i++) {
+                        if (characterBattles[i]){
+                            targetCharacterBattles.Add(characterBattles[i]);
+                        }
+                    }
                 }
                 else {
-                    targetCharacterBattles.Add(characterBattles[0]);
-                    targetCharacterBattles.Add(characterBattles[1]);
-                    targetCharacterBattles.Add(characterBattles[2]);
+                    for (int i = 0; i < 3; i++) {
+                        if (characterBattles[i]){
+                            targetCharacterBattles.Add(characterBattles[i]);
+                        }
+                    }
                 }
                 break;
             case Card.Target.Self:
