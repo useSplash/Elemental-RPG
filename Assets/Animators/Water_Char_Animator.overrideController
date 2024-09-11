@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Water_Char_Animator
+  m_Controller: {fileID: 9100000, guid: 67dfb986f8562eb4fbe1861c63e843c3, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: f401d44854d34754cb06cca584926315, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: d1c6fc8b312e223448d6f7eb9212a1f5, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 06908b30ffce4bc44bf4ae66ee747546, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 43f63fe0aa218ea48b10e7871797ac33, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: e77d2715fadbac34da673ebca9132d3c, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: c24eab275c83b544eaf5be50a537b852, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: c3224cf16dee17d409d167b43cfd02c0, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 07a3f40da9198064697606aa1de68cfe, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 2e8c1ab9eaf4a594985c80a8d38247c5, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 79cd92658526e7a4681810b3aad69dd8, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: bd518a084a366104b90b2c2ba46ddd87, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 57f416349ece5be4a9950adfe53448fe, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 7f72dc7fcfe0e3542bad2dea405bdf0c, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 0a2759cdd6e313648beac09c9089d9d1, type: 2}

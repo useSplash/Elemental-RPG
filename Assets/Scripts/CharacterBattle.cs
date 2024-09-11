@@ -1,0 +1,122 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class CharacterBattle : MonoBehaviour
+{
+    private CharacterBase characterBase;
+    private State state;
+    private Vector3 dashTargetPosition;
+    private Action onDashComplete;
+    private HealthSystem healthSystem;
+    private Vector3 basePosition;
+
+    private enum State {
+        Idle,
+        Dashing,
+        Busy
+    }
+
+    private void Awake(){
+        characterBase = GetComponent<CharacterBase>();
+    }
+
+    public void Setup(bool isPlayerTeam){
+        if (isPlayerTeam){
+            characterBase.SetAnimatorController(BattleHandler.GetInstance().playerAnimatorController);
+            characterBase.PlayIdleAnim(Vector3.right);
+        }
+        else {
+            characterBase.SetAnimatorController(BattleHandler.GetInstance().enemyAnimatorController);
+            characterBase.PlayIdleAnim(Vector3.left);
+        }
+
+        basePosition = GetPosition();
+        
+        healthSystem = new HealthSystem(100);
+    }
+
+    private void Update(){
+        switch(state){
+        case State.Idle:
+            // Invert the GameObject's scale on the X axis to flip it
+            Vector3 localScale = transform.localScale;
+            localScale.x = Mathf.Abs(localScale.x) * Mathf.Sign(-basePosition.x);
+            transform.localScale = localScale;
+            break;
+        case State.Busy:
+            break;
+        case State.Dashing:
+            float dashSpeed = 10f;
+            transform.position += (dashTargetPosition - GetPosition()) * dashSpeed * Time.deltaTime;
+
+            float reachedDistance = 1f;
+            if (Vector3.Distance(GetPosition(), dashTargetPosition) < reachedDistance){
+                // Arrived at Slide Target
+                transform.position = dashTargetPosition;
+                onDashComplete();
+            }
+            break;
+        }
+    }
+
+    public Vector3 GetPosition(){
+        return transform.position;
+    } 
+
+    public Vector3 GetBasePosition(){
+        return basePosition;
+    }
+
+    public void Damage(int damageAmount){
+        healthSystem.Damage(damageAmount);
+        Debug.Log("Ouch: " + healthSystem.GetHealthAmount());
+        characterBase.PlayHitAnim(() => {
+            if (healthSystem.IsDead()){
+                Debug.Log("Blegh");
+                characterBase.PlayDeathAnim();
+            }
+            else {
+                characterBase.PlayIdleAnim(Vector3.zero);
+            }
+        });
+    }
+
+    public void Melee_Attack1(CharacterBattle targetCharacterBattle, Action onAttackComplete) {
+        state = State.Busy;
+        Vector3 attackDir = (targetCharacterBattle.GetPosition() - GetPosition()).normalized;
+        characterBase.PlayMeleeAttack1Anim(attackDir, () => {
+        // Target Hit
+        targetCharacterBattle.Damage(50);
+        }, () => {
+            characterBase.PlayIdleAnim(attackDir);
+            onAttackComplete();
+        });
+    }
+
+    public void Ranged_Attack1(CharacterBattle targetCharacterBattle, Action onAttackComplete) {
+        state = State.Busy;
+        Vector3 attackDir = (targetCharacterBattle.GetPosition() - GetPosition()).normalized;
+        characterBase.PlayRangedAttack1Anim(attackDir, () => {
+        // Target Hit
+        targetCharacterBattle.Damage(50);
+        }, () => {
+            characterBase.PlayIdleAnim(attackDir);
+            onAttackComplete();
+        });
+    }
+
+
+    public void DashToPosition(Vector3 dashTargetPosition, Action onDashComplete){
+        this.dashTargetPosition = dashTargetPosition;
+        this.onDashComplete = onDashComplete;
+        state = State.Dashing;
+        characterBase.PlayDashAnim(dashTargetPosition - GetPosition());
+    }
+
+    public void SetToIdleState(){
+        state = State.Idle;
+        characterBase.PlayIdleAnim(Vector3.zero);
+    }
+}
