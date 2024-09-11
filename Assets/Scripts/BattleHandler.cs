@@ -133,11 +133,14 @@ public class BattleHandler : MonoBehaviour
     }
 
     private void SetActiveCharacterBattle(CharacterBattle characterBattle){
+        if (activeCharacterBattle != null) {
+            activeCharacterBattle.HideSelectionCircle();
+        }
         activeCharacterBattle = characterBattle;
+        characterBattle.ShowSelectionCircle();
     }
 
-    private void ChooseNextActiveCharacter(){
-
+    private bool TestBattleOver(){
         bool gameEnd = true;
         for (int i = 0; i < 3; i++) {
             if (characterBattles[i] && !characterBattles[i].GetIsDead()){
@@ -146,7 +149,7 @@ public class BattleHandler : MonoBehaviour
         }
         if (gameEnd) {
             Debug.Log("LOSE");
-            return;
+            return true;
         }
 
         gameEnd = true;
@@ -157,6 +160,14 @@ public class BattleHandler : MonoBehaviour
         }
         if (gameEnd) {
             Debug.Log("WIN");
+            return true;
+        }
+        return false;
+    }
+
+    private void ChooseNextActiveCharacter(){
+
+        if (TestBattleOver()){
             return;
         }
 

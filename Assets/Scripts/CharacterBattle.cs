@@ -12,6 +12,8 @@ public class CharacterBattle : MonoBehaviour
     private HealthSystem healthSystem;
     private Vector3 basePosition;
     private bool isPlayerTeam;
+    private GameObject selectionCircleGameObject;
+    public GameObject pfFloatingText;
 
     private enum State {
         Idle,
@@ -21,6 +23,8 @@ public class CharacterBattle : MonoBehaviour
 
     private void Awake(){
         characterBase = GetComponent<CharacterBase>();
+        selectionCircleGameObject = transform.Find("SelectionCircle").gameObject;
+        HideSelectionCircle();
     }
 
     public void Setup(bool isPlayerTeam, AnimatorOverrideController animator){
@@ -80,7 +84,13 @@ public class CharacterBattle : MonoBehaviour
     }
 
     public void Damage(int damageAmount){
+        if (healthSystem.IsDead()){
+            return;
+        }
         healthSystem.Damage(damageAmount);
+        if (pfFloatingText){
+            ShowFloatingText(damageAmount);
+        }
         Debug.Log("Ouch: " + healthSystem.GetHealthAmount());
         characterBase.PlayHitAnim(() => {
             if (healthSystem.IsDead()){
@@ -133,7 +143,7 @@ public class CharacterBattle : MonoBehaviour
     public void Buff(List<CharacterBattle> targetCharacterBattles, 
                         int buffAmount,
                         Action onAnimationComplete){
-                            
+
         state = State.Busy;
         characterBase.PlayBuffAnim(() => {
         // Target Hit
@@ -156,5 +166,18 @@ public class CharacterBattle : MonoBehaviour
     public void SetToIdleState(){
         state = State.Idle;
         characterBase.PlayIdleAnim(Vector3.zero);
+    }
+
+    public void ShowSelectionCircle(){
+        selectionCircleGameObject.SetActive(true);
+    }
+
+    public void HideSelectionCircle(){
+        selectionCircleGameObject.SetActive(false);
+    }
+
+    private void ShowFloatingText(int damage){
+        var damageText = Instantiate(pfFloatingText, transform.position, Quaternion.identity);
+        damageText.GetComponent<TextMesh>().text = damage.ToString();
     }
 }
