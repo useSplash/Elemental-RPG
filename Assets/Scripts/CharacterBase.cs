@@ -8,6 +8,7 @@ public class CharacterBase : MonoBehaviour
     private Animator animator;
     private Action onAnimationComplete;
     private Action onHit;
+    private Action onBuff;
 
     private void Awake(){
         animator = GetComponent<Animator>();
@@ -38,6 +39,13 @@ public class CharacterBase : MonoBehaviour
         transform.localScale = localScale;
 
         this.onHit = onHit;
+        this.onAnimationComplete = onAnimationComplete;
+    }
+
+    public void PlayBuffAnim(Action onBuff, Action onAnimationComplete){
+        animator.Play("Buff");
+
+        this.onBuff = onBuff;
         this.onAnimationComplete = onAnimationComplete;
     }
 
@@ -75,5 +83,9 @@ public class CharacterBase : MonoBehaviour
 
     public void AnimationHit(){
         onHit();
+    }
+
+    public void AnimationBuff(){
+        onBuff();
     }
 }

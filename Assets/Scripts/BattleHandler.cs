@@ -63,7 +63,7 @@ public class BattleHandler : MonoBehaviour
         switch (placement){
             case 0:
                 if (playerTeam.member1) {
-                    position = new Vector3(-2f, 0f);
+                    position = new Vector3(-2f, 1f);
                     isPlayerTeam = true;
                     animator = playerTeam.member1;
                 } 
@@ -73,7 +73,7 @@ public class BattleHandler : MonoBehaviour
                 break;
             case 1:
                 if (playerTeam.member2) {
-                    position = new Vector3(-4.5f, 1f);
+                    position = new Vector3(-2f, -1f);
                     isPlayerTeam = true;
                     animator = playerTeam.member2;
                 } 
@@ -83,7 +83,7 @@ public class BattleHandler : MonoBehaviour
                 break;
             case 2:
                 if (playerTeam.member3) {
-                    position = new Vector3(-5.5f, -1f);
+                    position = new Vector3(-5.5f, 0f);
                     isPlayerTeam = true;
                     animator = playerTeam.member3;
                 }
@@ -93,7 +93,7 @@ public class BattleHandler : MonoBehaviour
                 break;
             case 3:
                 if (enemyTeam.member1) {
-                    position = new Vector3(2f, 0f);
+                    position = new Vector3(2f, 1f);
                     isPlayerTeam = false;
                     animator = enemyTeam.member1;
                 }
@@ -103,7 +103,7 @@ public class BattleHandler : MonoBehaviour
                 break;
             case 4:
                 if (enemyTeam.member2) {
-                    position = new Vector3(4.5f, 1f);
+                    position = new Vector3(2f, -1f);
                     isPlayerTeam = false;
                     animator = enemyTeam.member2;
                 }
@@ -113,7 +113,7 @@ public class BattleHandler : MonoBehaviour
                 break;
             case 5:
                 if (enemyTeam.member3) {
-                    position = new Vector3(5.5f, -1f);
+                    position = new Vector3(5.5f, 0f);
                     isPlayerTeam = false;
                     animator = enemyTeam.member3;
                 }
@@ -230,29 +230,45 @@ public class BattleHandler : MonoBehaviour
 
     private void PerformAction(Card card, int action){
         if  (action >= card.actionSequence.Count) {
-            activeCharacterBattle.SetToIdleState();
-            ChooseNextActiveCharacter();
+            activeCharacterBattle.DashToPosition(activeCharacterBattle.GetBasePosition(), () => {      
+                activeCharacterBattle.SetToIdleState();
+                ChooseNextActiveCharacter();
+            });
             return;
         }
 
         switch (card.actionSequence[action]){
-            case (Card.Action.Melee_Attack1):
-                activeCharacterBattle.Melee_Attack1(targetCharacterBattles, () => {
+            case Card.Action.Melee_Attack1:
+                activeCharacterBattle.Melee_Attack1(targetCharacterBattles, 
+                                                    card.damageAmount, 
+                                                    () => {
+
                     PerformAction(card, action + 1);
                 });
                 break;
-            case (Card.Action.Ranged_Attack1):
-                activeCharacterBattle.Ranged_Attack1(targetCharacterBattles, () => {
+            case Card.Action.Ranged_Attack1:
+                activeCharacterBattle.Ranged_Attack1(targetCharacterBattles, 
+                                                    card.damageAmount,
+                                                    () => {
+
                     PerformAction(card, action + 1);
                 });
                 break;
-            case (Card.Action.Dash):
-                if (targetCharacterBattles.Count == 1) {
+            case Card.Action.Buff:
+                activeCharacterBattle.Buff(targetCharacterBattles, 
+                                            card.damageAmount,
+                                            () => {
+
+                    PerformAction(card, action + 1);
+                });
+                break;
+            case Card.Action.Dash:
+                if (card.target == Card.Target.SingleTarget) {
                     activeCharacterBattle.DashToPosition(targetCharacterBattles[0].GetPosition() 
-                        - (targetCharacterBattles[0].GetPosition() 
-                        - activeCharacterBattle.GetPosition()).normalized 
-                            * 2.5f, () => {
-                                PerformAction(card, action + 1);
+                        - new Vector3 (((targetCharacterBattles[0].GetPosition() 
+                                        - activeCharacterBattle.GetPosition()).normalized 
+                                        * 2.5f).x, 0, 0), () => {
+                                                PerformAction(card, action + 1);
                     });
                 }
                 else {
@@ -261,7 +277,7 @@ public class BattleHandler : MonoBehaviour
                     });
                 }
                 break;
-            case (Card.Action.Return):
+            case Card.Action.Return:
                 activeCharacterBattle.DashToPosition(activeCharacterBattle.GetBasePosition(), () => {
                     PerformAction(card, action + 1);
                 });

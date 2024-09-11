@@ -92,13 +92,20 @@ public class CharacterBattle : MonoBehaviour
         });
     }
 
-    public void Melee_Attack1(List<CharacterBattle> targetCharacterBattles, Action onAttackComplete) {
+    public void Buff(int buffAmount){
+        Debug.Log("Wahu: " + buffAmount);
+    }
+
+    public void Melee_Attack1(List<CharacterBattle> targetCharacterBattles, 
+                                int damageAmount,
+                                Action onAttackComplete) {
+
         state = State.Busy;
         Vector3 attackDir = (targetCharacterBattles[0].GetPosition() - GetPosition()).normalized;
         characterBase.PlayMeleeAttack1Anim(attackDir, () => {
         // Target Hit
         foreach (CharacterBattle characterBattle in targetCharacterBattles){
-            characterBattle.Damage(10);
+            characterBattle.Damage(damageAmount);
         }
         }, () => {
             characterBase.PlayIdleAnim(attackDir);
@@ -106,13 +113,16 @@ public class CharacterBattle : MonoBehaviour
         });
     }
 
-    public void Ranged_Attack1(List<CharacterBattle> targetCharacterBattles, Action onAttackComplete) {
+    public void Ranged_Attack1(List<CharacterBattle> targetCharacterBattles, 
+                                int damageAmount,
+                                Action onAttackComplete) {
+
         state = State.Busy;
         Vector3 attackDir = (targetCharacterBattles[0].GetPosition() - GetPosition()).normalized;
         characterBase.PlayRangedAttack1Anim(attackDir, () => {
         // Target Hit
         foreach (CharacterBattle characterBattle in targetCharacterBattles){
-            characterBattle.Damage(10);
+            characterBattle.Damage(damageAmount);
         }
         }, () => {
             characterBase.PlayIdleAnim(attackDir);
@@ -120,6 +130,21 @@ public class CharacterBattle : MonoBehaviour
         });
     }
 
+    public void Buff(List<CharacterBattle> targetCharacterBattles, 
+                        int buffAmount,
+                        Action onAnimationComplete){
+                            
+        state = State.Busy;
+        characterBase.PlayBuffAnim(() => {
+        // Target Hit
+        foreach (CharacterBattle characterBattle in targetCharacterBattles){
+            characterBattle.Buff(buffAmount);
+        }
+        }, () => {
+            characterBase.PlayIdleAnim(Vector3.zero);
+            onAnimationComplete();
+        });
+    }
 
     public void DashToPosition(Vector3 dashTargetPosition, Action onDashComplete){
         this.dashTargetPosition = dashTargetPosition;
