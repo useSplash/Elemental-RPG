@@ -10,12 +10,15 @@ public class BattleHandler : MonoBehaviour
         return instance;
     }
     [SerializeField] private Transform pfCharacterBattle;
-    public AnimatorOverrideController playerAnimatorController;
-    public AnimatorOverrideController enemyAnimatorController;
+    public TeamHandler playerTeam;
+    public TeamHandler enemyTeam;    
 
-    private CharacterBattle playerCharacterBattle;
-    private CharacterBattle enemyCharacterBattle;
+    private CharacterBattle[] characterBattles = new CharacterBattle[6];
+
     private CharacterBattle activeCharacterBattle;
+    private CharacterBattle selectedCharacterBattle;
+    private List<CharacterBattle> targetCharacterBattles = new List<CharacterBattle>();
+    private int characterBattleIndex;
     private State state;
 
     public Card card;
@@ -27,10 +30,14 @@ public class BattleHandler : MonoBehaviour
 
 
     private void Start(){
-        playerCharacterBattle = SpawnCharacter(true);
-        enemyCharacterBattle = SpawnCharacter(false);
 
-        SetActiveCharacterBattle(playerCharacterBattle);
+        for (int i = 0; i < 6; i++) {
+            characterBattles[i] = SpawnCharacter(i);
+        }
+
+        characterBattleIndex = 0;
+        SetActiveCharacterBattle(characterBattles[characterBattleIndex]);
+        selectedCharacterBattle = characterBattles[3];
         state = State.WaitingForPlayer;
     }
 
@@ -43,25 +50,84 @@ public class BattleHandler : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Space)){
                 // Attack
                 state = State.Busy;
-                // playerCharacterBattle.MeleeAttack(enemyCharacterBattle, () => {
-                //     ChooseNextActiveCharacter();
-                // });
                 PlayCardSequence(card);
             }
         }
     }
 
-    private CharacterBattle SpawnCharacter(bool isPlayerTeam){
+    private CharacterBattle SpawnCharacter(int placement){
         Vector3 position;
-        if (isPlayerTeam){
-            position = new Vector3(-4, 1);
+        bool isPlayerTeam;
+        AnimatorOverrideController animator;
+
+        switch (placement){
+            case 0:
+                if (playerTeam.member1) {
+                    position = new Vector3(-2f, 0f);
+                    isPlayerTeam = true;
+                    animator = playerTeam.member1;
+                } 
+                else {
+                    return null;
+                }
+                break;
+            case 1:
+                if (playerTeam.member2) {
+                    position = new Vector3(-4.5f, 1f);
+                    isPlayerTeam = true;
+                    animator = playerTeam.member2;
+                } 
+                else {
+                    return null;
+                }
+                break;
+            case 2:
+                if (playerTeam.member3) {
+                    position = new Vector3(-5.5f, -1f);
+                    isPlayerTeam = true;
+                    animator = playerTeam.member3;
+                }
+                else {
+                    return null;
+                }
+                break;
+            case 3:
+                if (enemyTeam.member1) {
+                    position = new Vector3(2f, 0f);
+                    isPlayerTeam = false;
+                    animator = enemyTeam.member1;
+                }
+                else {
+                    return null;
+                }
+                break;
+            case 4:
+                if (enemyTeam.member2) {
+                    position = new Vector3(4.5f, 1f);
+                    isPlayerTeam = false;
+                    animator = enemyTeam.member2;
+                }
+                else {
+                    return null;
+                }
+                break;
+            case 5:
+                if (enemyTeam.member3) {
+                    position = new Vector3(5.5f, -1f);
+                    isPlayerTeam = false;
+                    animator = enemyTeam.member3;
+                }
+                else {
+                    return null;
+                }
+                break;
+            default:
+                return null;
         }
-        else {
-            position = new Vector3(+4, 1);
-        }
+
         Transform characterTransform = Instantiate(pfCharacterBattle, position, Quaternion.identity);
         CharacterBattle characterBattle = characterTransform.GetComponent<CharacterBattle>();
-        characterBattle.Setup(isPlayerTeam);
+        characterBattle.Setup(isPlayerTeam, animator);
 
         return characterBattle;
     }
@@ -71,33 +137,90 @@ public class BattleHandler : MonoBehaviour
     }
 
     private void ChooseNextActiveCharacter(){
-        if (activeCharacterBattle == playerCharacterBattle){
-            SetActiveCharacterBattle(enemyCharacterBattle);
-            state = State.Busy;
 
-            // Enemy Attacks Player
-            // enemyCharacterBattle.MeleeAttack(playerCharacterBattle, () => {
-            ChooseNextActiveCharacter();
-            // });
+        bool gameEnd = true;
+        for (int i = 0; i < 3; i++) {
+            if (characterBattles[i] && !characterBattles[i].GetIsDead()){
+                gameEnd = false;
+            }
+        }
+        if (gameEnd) {
+            Debug.Log("LOSE");
+            return;
+        }
+
+        gameEnd = true;
+        for (int i = 3; i < 6; i++) {
+            if (characterBattles[i] && !characterBattles[i].GetIsDead()){
+                gameEnd = false;
+            }
+        }
+        if (gameEnd) {
+            Debug.Log("WIN");
+            return;
+        }
+
+        characterBattleIndex += 1;
+        if (characterBattleIndex >= 6){
+            characterBattleIndex = 0;
+        }
+        while (!characterBattles[characterBattleIndex] || characterBattles[characterBattleIndex].GetIsDead()){
+            characterBattleIndex += 1;
+            if (characterBattleIndex >= 6){
+                characterBattleIndex = 0;
+            }
+        }
+
+        SetActiveCharacterBattle(characterBattles[characterBattleIndex]);
+        if (characterBattles[characterBattleIndex].GetIsPlayerTeam()){
+            state = State.WaitingForPlayer;
+            selectedCharacterBattle = characterBattles[3];
         }
         else {
-            SetActiveCharacterBattle(playerCharacterBattle);
-            state = State.WaitingForPlayer;
+            state = State.Busy;
+            selectedCharacterBattle = characterBattles[0];
+            PlayCardSequence(card);
         }
     }
 
     private void PlayCardSequence(Card card){
-        CharacterBattle targetCharacterBattle;
-        if (card.target == Card.Target.SingleTarget){
-            targetCharacterBattle = enemyCharacterBattle;
+        targetCharacterBattles.Clear();
+        switch (card.target){
+            case Card.Target.SingleTarget:
+                targetCharacterBattles.Add(selectedCharacterBattle);
+                break;
+            case Card.Target.AllAllies:
+                if (activeCharacterBattle.GetIsPlayerTeam()){
+                    targetCharacterBattles.Add(characterBattles[0]);
+                    targetCharacterBattles.Add(characterBattles[1]);
+                    targetCharacterBattles.Add(characterBattles[2]);
+                }
+                else {
+                    targetCharacterBattles.Add(characterBattles[3]);
+                    targetCharacterBattles.Add(characterBattles[4]);
+                    targetCharacterBattles.Add(characterBattles[5]);
+                }
+                break;
+            case Card.Target.AllEnemies:
+                if (activeCharacterBattle.GetIsPlayerTeam()){
+                    targetCharacterBattles.Add(characterBattles[3]);
+                    targetCharacterBattles.Add(characterBattles[4]);
+                    targetCharacterBattles.Add(characterBattles[5]);
+                }
+                else {
+                    targetCharacterBattles.Add(characterBattles[0]);
+                    targetCharacterBattles.Add(characterBattles[1]);
+                    targetCharacterBattles.Add(characterBattles[2]);
+                }
+                break;
+            case Card.Target.Self:
+                targetCharacterBattles.Add(activeCharacterBattle);
+                break;
         }
-        else {
-            targetCharacterBattle = null;
-        }
-        PerformAction(card, 0, targetCharacterBattle);
+        PerformAction(card, 0);
     }
 
-    private void PerformAction(Card card, int action, CharacterBattle targetCharacterBattle){
+    private void PerformAction(Card card, int action){
         if  (action >= card.actionSequence.Count) {
             activeCharacterBattle.SetToIdleState();
             ChooseNextActiveCharacter();
@@ -106,23 +229,33 @@ public class BattleHandler : MonoBehaviour
 
         switch (card.actionSequence[action]){
             case (Card.Action.Melee_Attack1):
-                activeCharacterBattle.Melee_Attack1(targetCharacterBattle, () => {
-                    PerformAction(card, action + 1, targetCharacterBattle);
+                activeCharacterBattle.Melee_Attack1(targetCharacterBattles, () => {
+                    PerformAction(card, action + 1);
                 });
                 break;
             case (Card.Action.Ranged_Attack1):
-                activeCharacterBattle.Ranged_Attack1(targetCharacterBattle, () => {
-                    PerformAction(card, action + 1, targetCharacterBattle);
+                activeCharacterBattle.Ranged_Attack1(targetCharacterBattles, () => {
+                    PerformAction(card, action + 1);
                 });
                 break;
             case (Card.Action.Dash):
-                activeCharacterBattle.DashToPosition(targetCharacterBattle.GetPosition() - (targetCharacterBattle.GetPosition() - playerCharacterBattle.GetPosition()).normalized * 2.5f, () => {
-                    PerformAction(card, action + 1, targetCharacterBattle);
-                });
+                if (targetCharacterBattles.Count == 1) {
+                    activeCharacterBattle.DashToPosition(targetCharacterBattles[0].GetPosition() 
+                        - (targetCharacterBattles[0].GetPosition() 
+                        - activeCharacterBattle.GetPosition()).normalized 
+                            * 2.5f, () => {
+                                PerformAction(card, action + 1);
+                    });
+                }
+                else {
+                    activeCharacterBattle.DashToPosition(Vector3.zero , () => {
+                        PerformAction(card, action + 1);
+                    });
+                }
                 break;
             case (Card.Action.Return):
                 activeCharacterBattle.DashToPosition(activeCharacterBattle.GetBasePosition(), () => {
-                    PerformAction(card, action + 1, targetCharacterBattle);
+                    PerformAction(card, action + 1);
                 });
                 break;
         }

@@ -11,6 +11,7 @@ public class CharacterBattle : MonoBehaviour
     private Action onDashComplete;
     private HealthSystem healthSystem;
     private Vector3 basePosition;
+    private bool isPlayerTeam;
 
     private enum State {
         Idle,
@@ -22,16 +23,17 @@ public class CharacterBattle : MonoBehaviour
         characterBase = GetComponent<CharacterBase>();
     }
 
-    public void Setup(bool isPlayerTeam){
+    public void Setup(bool isPlayerTeam, AnimatorOverrideController animator){
+
+        characterBase.SetAnimatorController(animator);
         if (isPlayerTeam){
-            characterBase.SetAnimatorController(BattleHandler.GetInstance().playerAnimatorController);
             characterBase.PlayIdleAnim(Vector3.right);
         }
         else {
-            characterBase.SetAnimatorController(BattleHandler.GetInstance().enemyAnimatorController);
             characterBase.PlayIdleAnim(Vector3.left);
         }
 
+        this.isPlayerTeam = isPlayerTeam;
         basePosition = GetPosition();
         
         healthSystem = new HealthSystem(100);
@@ -69,12 +71,19 @@ public class CharacterBattle : MonoBehaviour
         return basePosition;
     }
 
+    public bool GetIsPlayerTeam(){
+        return isPlayerTeam;
+    }
+
+    public bool GetIsDead(){
+        return healthSystem.IsDead();
+    }
+
     public void Damage(int damageAmount){
         healthSystem.Damage(damageAmount);
         Debug.Log("Ouch: " + healthSystem.GetHealthAmount());
         characterBase.PlayHitAnim(() => {
             if (healthSystem.IsDead()){
-                Debug.Log("Blegh");
                 characterBase.PlayDeathAnim();
             }
             else {
@@ -83,24 +92,30 @@ public class CharacterBattle : MonoBehaviour
         });
     }
 
-    public void Melee_Attack1(CharacterBattle targetCharacterBattle, Action onAttackComplete) {
+    public void Melee_Attack1(List<CharacterBattle> targetCharacterBattles, Action onAttackComplete) {
         state = State.Busy;
-        Vector3 attackDir = (targetCharacterBattle.GetPosition() - GetPosition()).normalized;
+        Vector3 attackDir = (targetCharacterBattles[0].GetPosition() - GetPosition()).normalized;
         characterBase.PlayMeleeAttack1Anim(attackDir, () => {
         // Target Hit
-        targetCharacterBattle.Damage(50);
+        foreach (CharacterBattle characterBattle in targetCharacterBattles){
+            characterBattle.Damage(50);
+
+        }
         }, () => {
             characterBase.PlayIdleAnim(attackDir);
             onAttackComplete();
         });
     }
 
-    public void Ranged_Attack1(CharacterBattle targetCharacterBattle, Action onAttackComplete) {
+    public void Ranged_Attack1(List<CharacterBattle> targetCharacterBattles, Action onAttackComplete) {
         state = State.Busy;
-        Vector3 attackDir = (targetCharacterBattle.GetPosition() - GetPosition()).normalized;
+        Vector3 attackDir = (targetCharacterBattles[0].GetPosition() - GetPosition()).normalized;
         characterBase.PlayRangedAttack1Anim(attackDir, () => {
         // Target Hit
-        targetCharacterBattle.Damage(50);
+        foreach (CharacterBattle characterBattle in targetCharacterBattles){
+            characterBattle.Damage(50);
+
+        }
         }, () => {
             characterBase.PlayIdleAnim(attackDir);
             onAttackComplete();

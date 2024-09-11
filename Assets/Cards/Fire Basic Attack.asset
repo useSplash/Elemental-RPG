@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: Fire Basic Attack
   m_EditorClassIdentifier: 
   name: Fire Basic Attack
-  target: 0
-  actionSequence: 02000000000000000300000001000000020000000000000003000000
+  target: 2
+  actionSequence: 020000000000000003000000
