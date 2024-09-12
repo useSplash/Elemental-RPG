@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class CharacterBattle : MonoBehaviour
@@ -13,6 +14,7 @@ public class CharacterBattle : MonoBehaviour
     private Vector3 basePosition;
     private bool isPlayerTeam;
     private GameObject selectionCircleGameObject;
+    private GameObject targetIndicatorGameObject;
     public GameObject pfFloatingText;
 
     private enum State {
@@ -23,8 +25,12 @@ public class CharacterBattle : MonoBehaviour
 
     private void Awake(){
         characterBase = GetComponent<CharacterBase>();
+
         selectionCircleGameObject = transform.Find("SelectionCircle").gameObject;
         HideSelectionCircle();
+
+        targetIndicatorGameObject = transform.Find("TargetIndicator").gameObject;
+        HideTargetIndicator();
     }
 
     public void Setup(bool isPlayerTeam, AnimatorOverrideController animator){
@@ -87,11 +93,13 @@ public class CharacterBattle : MonoBehaviour
         if (healthSystem.IsDead()){
             return;
         }
+
         healthSystem.Damage(damageAmount);
         if (pfFloatingText){
             ShowFloatingText(damageAmount);
         }
-        Debug.Log("Ouch: " + healthSystem.GetHealthAmount());
+        StartCoroutine(FlashRed(0.1f));
+        CameraShake.Instance.ShakeCamera(0.1f, 0.1f);
         characterBase.PlayHitAnim(() => {
             if (healthSystem.IsDead()){
                 characterBase.PlayDeathAnim();
@@ -176,8 +184,30 @@ public class CharacterBattle : MonoBehaviour
         selectionCircleGameObject.SetActive(false);
     }
 
+    public void ShowTargetIndicator(){
+        targetIndicatorGameObject.SetActive(true);
+    }
+
+    public void HideTargetIndicator(){
+        targetIndicatorGameObject.SetActive(false);
+    }
+
     private void ShowFloatingText(int damage){
         var damageText = Instantiate(pfFloatingText, transform.position, Quaternion.identity);
         damageText.GetComponent<TextMesh>().text = damage.ToString();
+    }
+
+    private void OnMouseDown(){
+        BattleHandler.GetInstance().SelectCharacterBattle(this.GetComponent<CharacterBattle>());
+    }
+
+    // FIX LATER
+    IEnumerator FlashRed(float duration){
+        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+        // Color originalSpriteColor = spriteRenderer.color;
+        spriteRenderer.color = Color.red;
+        yield return new WaitForSeconds(duration);
+        // spriteRenderer.color = originalSpriteColor;
+        spriteRenderer.color = Color.white;
     }
 }

@@ -424,10 +424,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5560663605018189842, guid: 18325e405e8e84544aae85081cedc47b, type: 3}
-      propertyPath: pfFloatingText
-      value: 
-      objectReference: {fileID: 165886512}
     - target: {fileID: 9198559844537598441, guid: 18325e405e8e84544aae85081cedc47b, type: 3}
       propertyPath: m_Name
       value: Player
@@ -512,11 +508,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 162056639}
   m_CullTransparentMesh: 1
---- !u!1 &165886512 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 8193867036034295758, guid: 3d1f2e69cf40358498d18a94ea3273a3, type: 3}
-  m_PrefabInstance: {fileID: 1843659099669175347}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &187021319
 GameObject:
   m_ObjectHideFlags: 0
@@ -4086,11 +4077,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3839755317220265091, guid: 3d1f2e69cf40358498d18a94ea3273a3, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -16.72
+      value: -17.04
       objectReference: {fileID: 0}
     - target: {fileID: 3839755317220265091, guid: 3d1f2e69cf40358498d18a94ea3273a3, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0.3
       objectReference: {fileID: 0}
     - target: {fileID: 3839755317220265091, guid: 3d1f2e69cf40358498d18a94ea3273a3, type: 3}
       propertyPath: m_LocalPosition.z

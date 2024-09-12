@@ -14,10 +14,11 @@ public class BattleHandler : MonoBehaviour
     public TeamHandler enemyTeam;    
 
     private CharacterBattle[] characterBattles = new CharacterBattle[6];
-
     private CharacterBattle activeCharacterBattle;
     private CharacterBattle selectedCharacterBattle;
     private List<CharacterBattle> targetCharacterBattles = new List<CharacterBattle>();
+    private List<CharacterBattle> validTargetCharacterBattles = new List<CharacterBattle>();
+    private CharacterBattle playerSelectedCharacterBattle;
     private int characterBattleIndex;
     private State state;
 
@@ -35,10 +36,7 @@ public class BattleHandler : MonoBehaviour
             characterBattles[i] = SpawnCharacter(i);
         }
 
-        characterBattleIndex = 0;
-        SetActiveCharacterBattle(characterBattles[characterBattleIndex]);
-        selectedCharacterBattle = characterBattles[3];
-        state = State.WaitingForPlayer;
+        ChooseNextActiveCharacter();
     }
 
     private void Awake(){
@@ -167,35 +165,62 @@ public class BattleHandler : MonoBehaviour
 
     private void ChooseNextActiveCharacter(){
 
-        if (TestBattleOver()){
-            return;
-        }
+        if (activeCharacterBattle != null){
+            if (TestBattleOver()){
+                return;
+            }
 
-        characterBattleIndex += 1;
-        if (characterBattleIndex >= 6){
-            characterBattleIndex = 0;
-        }
-        while (!characterBattles[characterBattleIndex] || characterBattles[characterBattleIndex].GetIsDead()){
             characterBattleIndex += 1;
             if (characterBattleIndex >= 6){
                 characterBattleIndex = 0;
             }
+            while (!characterBattles[characterBattleIndex] || characterBattles[characterBattleIndex].GetIsDead()){
+                characterBattleIndex += 1;
+                if (characterBattleIndex >= 6){
+                    characterBattleIndex = 0;
+                }
+            }
+        }
+        else { 
+            characterBattleIndex = 0;
         }
 
         SetActiveCharacterBattle(characterBattles[characterBattleIndex]);
+        validTargetCharacterBattles.Clear();
         if (characterBattles[characterBattleIndex].GetIsPlayerTeam()){
+            for (int i = 3; i < 6; i++) {
+                if (characterBattles[i] && !characterBattles[i].GetIsDead()){
+                    validTargetCharacterBattles.Add(characterBattles[i]);
+                }
+            }
             state = State.WaitingForPlayer;
-            selectedCharacterBattle = characterBattles[3];
+
+            // Swap target if invalid
+            if (validTargetCharacterBattles.Contains(playerSelectedCharacterBattle)){
+                selectedCharacterBattle = playerSelectedCharacterBattle;
+            }
+            else {
+                selectedCharacterBattle = validTargetCharacterBattles[0];
+            }
+            selectedCharacterBattle.ShowTargetIndicator();
         }
         else {
+            for (int i = 0; i < 3; i++) {
+                if (characterBattles[i] && !characterBattles[i].GetIsDead()){
+                    validTargetCharacterBattles.Add(characterBattles[i]);
+                }
+            }
             state = State.Busy;
-            selectedCharacterBattle = characterBattles[0];
+            selectedCharacterBattle = validTargetCharacterBattles[0];
             PlayCardSequence(card);
         }
     }
 
     private void PlayCardSequence(Card card){
         targetCharacterBattles.Clear();
+        selectedCharacterBattle.HideTargetIndicator();
+
+
         switch (card.target){
             case Card.Target.SingleTarget:
                 targetCharacterBattles.Add(selectedCharacterBattle);
@@ -293,6 +318,22 @@ public class BattleHandler : MonoBehaviour
                     PerformAction(card, action + 1);
                 });
                 break;
+        }
+    }
+
+    public void SelectCharacterBattle(CharacterBattle characterBattle){
+        if (state == State.WaitingForPlayer && validTargetCharacterBattles.Contains(characterBattle)){
+            // Hide old indicator
+            if (selectedCharacterBattle){
+                selectedCharacterBattle.HideTargetIndicator();
+            }
+
+            // Select new and show indicator
+            selectedCharacterBattle = characterBattle;
+            selectedCharacterBattle.ShowTargetIndicator();
+
+            // To save player choice of target
+            playerSelectedCharacterBattle = selectedCharacterBattle;
         }
     }
 }

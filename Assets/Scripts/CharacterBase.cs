@@ -83,7 +83,6 @@ public class CharacterBase : MonoBehaviour
 
     public void AnimationHit(){
         onHit();
-        CameraShake.Instance.ShakeCamera(0.1f, 0.1f);
     }
 
     public void AnimationBuff(){
