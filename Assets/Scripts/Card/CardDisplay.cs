@@ -18,7 +18,12 @@ public class CardDisplay : MonoBehaviour
         artwork.sprite = card.artwork;
         nameText.text = card.name;
         targettingText.text = card.target.ToString();
-        descriptionText.text = card.description;
+        if (card.description == ""){
+            descriptionText.text = "No Description";
+        }
+        else { 
+            descriptionText.text = card.description;
+        }
         damageText.text = card.damageAmount.ToString();
     }
 }

@@ -5,14 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "New Card", menuName = "Card")]
 public class Card : ScriptableObject
 {
-    public Sprite artwork;
-    public new string name;
-    public string description;
-    public int damageAmount;
-    public int buffAmount;
-
-    public Target target;
-
+    
     public enum Target{
         SingleTarget,
         AllAllies,
@@ -27,6 +20,19 @@ public class Card : ScriptableObject
         Dash,
         Return,
     }
+
+    public enum BuffType{
+        Heal,
+        AttackUp,
+    }
+
+    public Sprite artwork;
+    public new string name;
+    public string description;
+    public int damageAmount;
+    public int buffAmount;
+
+    public Target target;
 
     public List<Action> actionSequence;
 }

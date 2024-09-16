@@ -148,7 +148,7 @@ public class CharacterBattle : MonoBehaviour
         });
     }
 
-    public void Buff(List<CharacterBattle> targetCharacterBattles, 
+    public void BuffTarget(List<CharacterBattle> targetCharacterBattles, 
                         int buffAmount,
                         Action onAnimationComplete){
 

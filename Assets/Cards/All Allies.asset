@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: All Allies
   m_EditorClassIdentifier: 
   artwork: {fileID: 21300000, guid: 3c9b925e7d2279c4fbaa3f428ea3f984, type: 3}
-  name: Self
+  name: All Allies
   description: Buff ALL ALLIES
   damageAmount: 0
   buffAmount: 8

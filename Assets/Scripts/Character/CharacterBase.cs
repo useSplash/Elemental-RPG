@@ -19,7 +19,7 @@ public class CharacterBase : MonoBehaviour
     }
 
     public void PlayMeleeAttack1Anim(Vector3 dir, Action onHit, Action onAnimationComplete) {
-        animator.Play("Melee_Attack");
+        animator.Play("Melee_Attack", -1, 0);
 
         // Invert the GameObject's scale on the X axis to flip it
         Vector3 localScale = transform.localScale;
@@ -31,7 +31,7 @@ public class CharacterBase : MonoBehaviour
     }
 
     public void PlayRangedAttack1Anim(Vector3 dir, Action onHit, Action onAnimationComplete) {
-        animator.Play("Ranged_Attack");
+        animator.Play("Ranged_Attack", -1, 0);
 
         // Invert the GameObject's scale on the X axis to flip it
         Vector3 localScale = transform.localScale;
@@ -43,14 +43,14 @@ public class CharacterBase : MonoBehaviour
     }
 
     public void PlayBuffAnim(Action onBuff, Action onAnimationComplete){
-        animator.Play("Buff");
+        animator.Play("Buff", -1, 0);
 
         this.onBuff = onBuff;
         this.onAnimationComplete = onAnimationComplete;
     }
 
     public void PlayHitAnim(Action onAnimationComplete){
-        animator.Play("Hit");
+        animator.Play("Hit", -1, 0);
 
         this.onAnimationComplete = onAnimationComplete;
     }

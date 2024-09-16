@@ -20,9 +20,9 @@ public class BattleHandler : MonoBehaviour
     private List<CharacterBattle> validTargetCharacterBattles = new List<CharacterBattle>();
     private CharacterBattle playerSelectedCharacterBattle;
     private int characterBattleIndex;
-    private State state;
 
-    public Card card;
+    private State state;
+    private List<Card> cardSequence = new List<Card>();
 
     private enum State {
         WaitingForPlayer,
@@ -37,6 +37,7 @@ public class BattleHandler : MonoBehaviour
         }
 
         ChooseNextActiveCharacter();
+        CardSequenceDisplay.Instance.SetCardText(cardSequence);
     }
 
     private void Awake(){
@@ -48,7 +49,16 @@ public class BattleHandler : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Space)){
                 // Attack
                 state = State.Busy;
-                PlayCardSequence(card);
+                if (cardSequence.Count >= 1){
+                    PlayCardActionSequence(cardSequence[0]);
+                }
+                else {
+                    ChooseNextActiveCharacter();
+                }
+            }
+            if (Input.GetKeyDown(KeyCode.R)){
+                // Reset Chosen Cards
+                ResetCardSequence();
             }
         }
     }
@@ -212,14 +222,18 @@ public class BattleHandler : MonoBehaviour
             }
             state = State.Busy;
             selectedCharacterBattle = validTargetCharacterBattles[0];
-            PlayCardSequence(card);
+            if (cardSequence[0] != null){
+                PlayCardActionSequence(cardSequence[0]);
+            }
+            else {
+                ChooseNextActiveCharacter();
+            }
         }
     }
 
-    private void PlayCardSequence(Card card){
+    private void PlayCardActionSequence(Card card){
         targetCharacterBattles.Clear();
         selectedCharacterBattle.HideTargetIndicator();
-
 
         switch (card.target){
             case Card.Target.SingleTarget:
@@ -264,22 +278,31 @@ public class BattleHandler : MonoBehaviour
         PerformAction(card, 0);
     }
 
-    private void PerformAction(Card card, int action){
-        if  (action >= card.actionSequence.Count) {
-            activeCharacterBattle.DashToPosition(activeCharacterBattle.GetBasePosition(), () => {      
-                activeCharacterBattle.SetToIdleState();
-                ChooseNextActiveCharacter();
-            });
+    private void PerformAction(Card card, int actionIndex){
+        if  (actionIndex >= card.actionSequence.Count) {
+            cardSequence.RemoveAt(0);
+            CardSequenceDisplay.Instance.SetCardText(cardSequence);
+            if (cardSequence.Count <= 0){
+                activeCharacterBattle.DashToPosition(activeCharacterBattle.GetBasePosition(), () => {      
+                    activeCharacterBattle.SetToIdleState();
+                    ChooseNextActiveCharacter();
+                });
+            }
+            else {
+                PlayCardActionSequence(cardSequence[0]);
+            }
             return;
         }
 
-        switch (card.actionSequence[action]){
+        // Debug.Log(card.name + ": " + card.actionSequence[actionIndex]); 
+
+        switch (card.actionSequence[actionIndex]){
             case Card.Action.Melee_Attack1:
                 activeCharacterBattle.Melee_Attack1(targetCharacterBattles, 
                                                     card.damageAmount, 
                                                     () => {
 
-                    PerformAction(card, action + 1);
+                    PerformAction(card, actionIndex + 1);
                 });
                 break;
             case Card.Action.Ranged_Attack1:
@@ -287,35 +310,42 @@ public class BattleHandler : MonoBehaviour
                                                     card.damageAmount,
                                                     () => {
 
-                    PerformAction(card, action + 1);
+                    PerformAction(card, actionIndex + 1);
                 });
                 break;
             case Card.Action.Buff:
-                activeCharacterBattle.Buff(targetCharacterBattles, 
-                                            card.damageAmount,
+                activeCharacterBattle.BuffTarget(targetCharacterBattles, 
+                                            card.buffAmount,
                                             () => {
 
-                    PerformAction(card, action + 1);
+                    PerformAction(card, actionIndex + 1);
                 });
                 break;
             case Card.Action.Dash:
+                Vector3 dashPosition;
+
                 if (card.target == Card.Target.SingleTarget) {
-                    activeCharacterBattle.DashToPosition(targetCharacterBattles[0].GetPosition() 
+                    dashPosition = targetCharacterBattles[0].GetPosition() 
                         - new Vector3 (((targetCharacterBattles[0].GetPosition() 
                                         - activeCharacterBattle.GetPosition()).normalized 
-                                        * 2.5f).x, 0, 0), () => {
-                                                PerformAction(card, action + 1);
+                                        * 2.5f).x, 0, 0);
+                }
+                else {
+                    dashPosition = Vector3.zero;
+                }
+
+                if (Vector3.Distance(activeCharacterBattle.GetPosition(), dashPosition) > 0.1f){
+                    activeCharacterBattle.DashToPosition(dashPosition, () => {
+                                                PerformAction(card, actionIndex + 1);
                     });
                 }
                 else {
-                    activeCharacterBattle.DashToPosition(Vector3.zero , () => {
-                        PerformAction(card, action + 1);
-                    });
+                    PerformAction(card, actionIndex + 1);
                 }
                 break;
             case Card.Action.Return:
                 activeCharacterBattle.DashToPosition(activeCharacterBattle.GetBasePosition(), () => {
-                    PerformAction(card, action + 1);
+                    PerformAction(card, actionIndex + 1);
                 });
                 break;
         }
@@ -334,6 +364,20 @@ public class BattleHandler : MonoBehaviour
 
             // To save player choice of target
             playerSelectedCharacterBattle = selectedCharacterBattle;
+        }
+    }
+
+    public void AddToCardSequence(Card card){
+        if (state == State.WaitingForPlayer){
+            cardSequence.Add(card);
+            CardSequenceDisplay.Instance.SetCardText(cardSequence);
+        }
+    }
+
+    public void ResetCardSequence(){
+        if (state == State.WaitingForPlayer){
+            cardSequence.Clear();
+            CardSequenceDisplay.Instance.SetCardText(cardSequence);
         }
     }
 }

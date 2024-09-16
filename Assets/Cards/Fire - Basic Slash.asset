@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ea6a2126880034b4ba7d2804b7e7f090, type: 3}
-  m_Name: All Enemies
+  m_Name: Fire - Basic Slash
   m_EditorClassIdentifier: 
-  artwork: {fileID: 21300000, guid: 9a980b46eba870d429c6c9dcb5263718, type: 3}
-  name: All Enemies
-  description: HIT ALL ENEMIES
+  artwork: {fileID: 21300000, guid: b11a5e2ad31da224a891feebec322d10, type: 3}
+  name: Basic Slash
+  description: 
   damageAmount: 10
   buffAmount: 0
-  target: 2
-  actionSequence: 0300000001000000
+  target: 0
+  actionSequence: 0300000000000000
